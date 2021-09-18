@@ -25,7 +25,7 @@ void Inject() {
 			exit(-1);
 		}
 
-		CreateHook(hKernel32Module, createThreadHookInfo, "CreateThread", WCreateThread);
+		CreateHook(hKernel32Module, createRemoteThreadExHookInfo, "CreateRemoteThreadEx", WCreateRemoteThreadEx);
 		CreateHook(hKernel32Module, getThreadIdHookInfo, "GetThreadId", WGetThreadId);
 		CreateHook(hKernel32Module, closeHandleHookInfo, "CloseHandle", WCloseHandle);
 
@@ -39,9 +39,9 @@ void Inject() {
 
 void WINAPI Initialize() {
 	memset(wThreads, 0, sizeof(wThreads));
-	hProcess = OpenProcess(PROCESS_ALL_ACCESS, 0, GetCurrentProcessId());
+	wHProcess = OpenProcess(PROCESS_ALL_ACCESS, 0, GetCurrentProcessId());
 	Inject();
-	DP1("[Wind] Injected, HProcess: 0x%p", hProcess);
+	DP1("[Wind] Injected, HProcess: 0x%p", wHProcess);
 }
 EXTERN_C_END
 

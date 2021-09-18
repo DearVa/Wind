@@ -18,8 +18,5 @@
     <ClCompile Include="Wind.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Hook.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>

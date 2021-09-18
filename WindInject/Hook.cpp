@@ -1,6 +1,6 @@
 #include "Hook.h"
 
-HANDLE hProcess;
+HANDLE wHProcess;
 
 void HookOn(HookInfo &hookInfo) {
 	if (hookInfo.hooked) {
@@ -9,9 +9,9 @@ void HookOn(HookInfo &hookInfo) {
 	DWORD dwTemp = 0;
 	DWORD dwOldProtect;
 
-	VirtualProtectEx(hProcess, hookInfo.farProc, 5, PAGE_READWRITE, &dwOldProtect);
-	WriteProcessMemory(hProcess, hookInfo.farProc, hookInfo.newCode, 5, nullptr);
-	VirtualProtectEx(hProcess, hookInfo.farProc, 5, dwOldProtect, &dwTemp);
+	VirtualProtectEx(wHProcess, hookInfo.farProc, 5, PAGE_READWRITE, &dwOldProtect);
+	WriteProcessMemory(wHProcess, hookInfo.farProc, hookInfo.newCode, 5, nullptr);
+	VirtualProtectEx(wHProcess, hookInfo.farProc, 5, dwOldProtect, &dwTemp);
 
 	// DP2("[Wind] HookOn, farProc: 0x%X, newCode: 0x%X", hookInfo.farProc, hookInfo.newCode);
 	
@@ -25,9 +25,9 @@ void HookOff(HookInfo &hookInfo) {
 	DWORD dwTemp = 0;
 	DWORD dwOldProtect;
 
-	VirtualProtectEx(hProcess, hookInfo.farProc, 5, PAGE_READWRITE, &dwOldProtect);
-	WriteProcessMemory(hProcess, hookInfo.farProc, hookInfo.oldCode, 5, nullptr);
-	VirtualProtectEx(hProcess, hookInfo.farProc, 5, dwOldProtect, &dwTemp);
+	VirtualProtectEx(wHProcess, hookInfo.farProc, 5, PAGE_READWRITE, &dwOldProtect);
+	WriteProcessMemory(wHProcess, hookInfo.farProc, hookInfo.oldCode, 5, nullptr);
+	VirtualProtectEx(wHProcess, hookInfo.farProc, 5, dwOldProtect, &dwTemp);
 	hookInfo.hooked = false;
 }
 
@@ -41,9 +41,9 @@ void CreateHook(const HMODULE hModule, HookInfo &hookInfo, const LPCSTR hookName
 	DWORD dwTemp = 0;
 	DWORD dwOldProtect;
 
-	VirtualProtectEx(hProcess, hookInfo.farProc, 5, PAGE_READWRITE, &dwOldProtect);
-	ReadProcessMemory(hProcess, hookInfo.farProc, hookInfo.oldCode, 5, nullptr);
-	VirtualProtectEx(hProcess, hookInfo.farProc, 5, dwOldProtect, &dwTemp);
+	VirtualProtectEx(wHProcess, hookInfo.farProc, 5, PAGE_READWRITE, &dwOldProtect);
+	ReadProcessMemory(wHProcess, hookInfo.farProc, hookInfo.oldCode, 5, nullptr);
+	VirtualProtectEx(wHProcess, hookInfo.farProc, 5, dwOldProtect, &dwTemp);
 
 	hookInfo.newCode[0] = 0xe9;
 	auto address = reinterpret_cast<ULONG_PTR>(callback) - reinterpret_cast<ULONG_PTR>(hookInfo.farProc) - 5;

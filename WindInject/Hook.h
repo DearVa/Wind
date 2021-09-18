@@ -1,7 +1,7 @@
 #pragma once
 #include <Windows.h>
 
-extern HANDLE hProcess;
+extern HANDLE wHProcess;
 
 struct HookInfo {
 	BOOL hooked;
