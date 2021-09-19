@@ -18,5 +18,16 @@
     <ClCompile Include="Wind.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\WLink\Wlink.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Wind.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\WLink\Wlink.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

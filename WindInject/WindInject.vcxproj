@@ -157,14 +157,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\WLink\Wlink.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Hook.cpp" />
     <ClCompile Include="HookThread.cpp" />
+    <ClCompile Include="Wsave.cpp" />
+    <ClCompile Include="Wlog.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\WLink\Wlink.h" />
     <ClInclude Include="Hook.h" />
-    <ClInclude Include="log.h" />
+    <ClInclude Include="Wsave.h" />
     <ClInclude Include="HookThread.h" />
+    <ClInclude Include="Wlog.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

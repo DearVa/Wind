@@ -1,29 +1,48 @@
 #include "HookThread.h"
+#include "Wlog.h"
 
 WThread wThreads[MAX_THREAD_NUM];
-HookInfo createRemoteThreadExHookInfo, getThreadIdHookInfo, closeHandleHookInfo;
+HookInfo createRemoteThreadExHookInfo, getThreadIdHookInfo, closeHandleHookInfo, terminateThreadHookInfo;
 
-BOOL WThread::isAlive() const {
+BOOL WThread::isAlive() {
 	if (this->internalHandle == NULL) {
 		return false;
 	}
 	DWORD exitCode;
 	if (GetExitCodeThread(this->internalHandle, &exitCode)) {
-		return exitCode == STILL_ACTIVE;
+		if (exitCode == STILL_ACTIVE) {
+			return true;
+		}
+		this->internalHandle = NULL;
+		return false;
 	}
 	return false;
+}
+
+WThread *GetWThread(HANDLE hThread) {
+	const auto index = reinterpret_cast<DWORD>(hThread);
+	if (index >= MAGIC_NUMBER && index < MAGIC_NUMBER + MAX_THREAD_NUM) {
+		auto &wThread = wThreads[index - MAGIC_NUMBER];
+		if (wThread.originHandle != NULL && wThread.isAlive()) {
+			return &wThread;
+		}
+	}
+	return nullptr;
+}
+
+void ListWThreads(char *buf) {
+	
 }
 
 EXTERN_C_START
 // _beginthreadex, CreateThread, CreateRemoteThread finally call the CreateRemoteThreadEx.
 _Ret_maybenull_ HANDLE WINAPI WCreateRemoteThreadEx(HANDLE hProcess, LPSECURITY_ATTRIBUTES lpThreadAttributes, SIZE_T dwStackSize, LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, DWORD dwCreationFlags, LPPROC_THREAD_ATTRIBUTE_LIST lpAttributeList, LPDWORD lpThreadId) {
-	// DP0("[Wind] WCreateThread");
 	HookOff(createRemoteThreadExHookInfo);
 	const auto hThread = CreateRemoteThreadEx(hProcess, lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, dwCreationFlags, lpAttributeList, lpThreadId);
 	HookOn(createRemoteThreadExHookInfo);
 
 	DP3("[Wind] call CreateThread, hProcess: %p, lpStartAddress: %p, lpThreadId: %p", hProcess, lpStartAddress, lpThreadId);
-	
+
 	if (hThread == NULL) {
 		return NULL;
 	}
@@ -50,7 +69,7 @@ _Ret_maybenull_ HANDLE WINAPI WCreateRemoteThreadEx(HANDLE hProcess, LPSECURITY_
 		exit(-1);
 	}
 
-	DP3("[Wind] call CreateThread, StartAddress: %p, Remap: %p -> %p", lpStartAddress, hThread, mappedThreadHandle);
+	DP2("[Wind] call CreateThread, Remap: %p -> %p", hThread, mappedThreadHandle);
 	return reinterpret_cast<HANDLE>(mappedThreadHandle);
 }
 
@@ -61,7 +80,7 @@ DWORD WINAPI WGetThreadId(HANDLE Thread) {
 	if (index >= MAX_THREAD_NUM) {
 		return 0;
 	}
-	const auto &wThread = wThreads[index];
+	auto &wThread = wThreads[index];
 	if (wThread.isAlive()) {
 		return wThread.mappedHandleId;
 	}
@@ -70,7 +89,7 @@ DWORD WINAPI WGetThreadId(HANDLE Thread) {
 
 BOOL WINAPI WCloseHandle(HANDLE hObject) {
 	DP1("[Wind] call CloseHandle, hObject: %p", hObject);
-	if (hObject == nullptr) {
+	if (hObject == NULL) {
 		return false;
 	}
 	BOOL result;
@@ -92,6 +111,19 @@ BOOL WINAPI WCloseHandle(HANDLE hObject) {
 		HookOn(closeHandleHookInfo);
 		DP0("[Wind] Close System Handle");
 	}
+	return result;
+}
+
+BOOL WINAPI WTerminateThread(HANDLE hThread, DWORD dwExitCode) {
+	const auto wThread = GetWThread(hThread);
+	if (wThread == nullptr) {
+		return false;
+	}
+	HookOff(terminateThreadHookInfo);
+	const BOOL result = TerminateThread(wThread->originHandle, dwExitCode);
+	HookOn(terminateThreadHookInfo);
+	wThread->originHandle = NULL;
+	wThread->internalHandle = NULL;
 	return result;
 }
 EXTERN_C_END

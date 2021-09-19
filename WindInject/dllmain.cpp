@@ -8,11 +8,14 @@
 
 #include "Hook.h"
 #include "HookThread.h"
-#include "log.h"
+#include "../WLink/Wlink.h"
+#include "Wlog.h"
 
 using namespace std;
 
 bool injected;
+HANDLE hMapFile;
+BYTE *lpMemFile;
 
 EXTERN_C_START
 void Inject() {
@@ -28,18 +31,18 @@ void Inject() {
 		CreateHook(hKernel32Module, createRemoteThreadExHookInfo, "CreateRemoteThreadEx", WCreateRemoteThreadEx);
 		CreateHook(hKernel32Module, getThreadIdHookInfo, "GetThreadId", WGetThreadId);
 		CreateHook(hKernel32Module, closeHandleHookInfo, "CloseHandle", WCloseHandle);
-
-		/*const HMODULE hUcrtbaseModule = GetModuleHandle(TEXT("ucrtbase"));
-		if (hUcrtbaseModule != nullptr) {
-			CreateHook(hUcrtbaseModule, beginthreadexHookInfo, "_beginthreadex", W_beginthreadex);
-			CreateHook(hUcrtbaseModule, beginthreadHookInfo, "_beginthread", W_beginthread);
-		}*/
+		//CreateHook(hKernel32Module, terminateThreadHookInfo, "TerminateThread", WTerminateThread);
 	}
 }
 
 void WINAPI Initialize() {
 	memset(wThreads, 0, sizeof(wThreads));
-	wHProcess = OpenProcess(PROCESS_ALL_ACCESS, 0, GetCurrentProcessId());
+
+	if (!OpenWLink()) {
+		return;
+	}
+	
+	wHProcess = OpenProcess(PROCESS_ALL_ACCESS, false, GetCurrentProcessId());
 	Inject();
 	DP1("[Wind] Injected, HProcess: 0x%p", wHProcess);
 }

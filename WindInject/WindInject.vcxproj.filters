@@ -24,15 +24,30 @@
     <ClCompile Include="HookThread.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Wsave.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Wlog.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\WLink\Wlink.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="log.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Hook.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="HookThread.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Wsave.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Wlog.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\WLink\Wlink.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
