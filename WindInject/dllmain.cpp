@@ -45,6 +45,7 @@ void WINAPI Initialize() {
 	wHProcess = OpenProcess(PROCESS_ALL_ACCESS, false, GetCurrentProcessId());
 	Inject();
 	DP1("[Wind] Injected, HProcess: 0x%p", wHProcess);
+	ResumeThread(wLinkThread);
 }
 EXTERN_C_END
 

@@ -19,6 +19,10 @@ void HandleCommand() {
 		if (command == "quit") {
 			return;
 		}
+		if (command == "alert") {
+			char msg[] = "Test alert";
+			SendWMessageH(1, strlen(msg), msg);
+		}
 	}
 }
 
@@ -29,7 +33,7 @@ bool CreateProcess(const LPSTR lpCommandLine) {
 	si.wShowWindow = SW_SHOW;
 	//pi:创建线程返回的信息
 	PROCESS_INFORMATION pi = { 0 };
-	const BOOL bRet = CreateProcess(NULL, lpCommandLine, NULL, NULL, FALSE, CREATE_SUSPENDED | CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi);
+	const BOOL bRet = CreateProcess(nullptr, lpCommandLine, nullptr, nullptr, FALSE, CREATE_SUSPENDED | CREATE_NEW_CONSOLE, nullptr, nullptr, &si, &pi);
 	if (!bRet) {
 		cout << "CreateProcess Failed\n";
 		return false;
@@ -40,19 +44,19 @@ bool CreateProcess(const LPSTR lpCommandLine) {
 }
 
 bool InjectDll() {
-	const auto pDllPath = VirtualAllocEx(hProcess, NULL, injectDllPath.size() + 1, MEM_COMMIT, PAGE_READWRITE);
+	const auto pDllPath = VirtualAllocEx(hProcess, nullptr, injectDllPath.size() + 1, MEM_COMMIT, PAGE_READWRITE);
 	if (pDllPath == nullptr) {
 		cout << "VirtualAllocEx Failed\n";
 		return false;
 	}
-	WriteProcessMemory(hProcess, pDllPath, injectDllPath.c_str(), injectDllPath.size() + 1, NULL);
+	WriteProcessMemory(hProcess, pDllPath, injectDllPath.c_str(), injectDllPath.size() + 1, nullptr);
 	const auto pLoadLibrary = GetProcAddress(GetModuleHandle("kernel32"), "LoadLibraryA");
 	if (pLoadLibrary == nullptr) {
 		cout << "LoadLibraryA Failed\n";
 		return false;
 	}
-	auto pLib = reinterpret_cast<PTHREAD_START_ROUTINE>(pLoadLibrary);
-	HANDLE hNewThread = CreateRemoteThread(hProcess, NULL, 0, pLib, pDllPath, 0, NULL);
+	const auto pLib = reinterpret_cast<PTHREAD_START_ROUTINE>(pLoadLibrary);
+	const auto hNewThread = CreateRemoteThread(hProcess, nullptr, 0, pLib, pDllPath, 0, nullptr);
 	if (hNewThread == INVALID_HANDLE_VALUE) {
 		cout << "CreateRemoteThread Failed\n";
 		return false;
@@ -64,7 +68,6 @@ bool InjectDll() {
 
 	ResumeThread(hThread);
 	ResumeThread(wLinkThread);
-
 }
 
 bool IsFileExist(string &path) {
@@ -74,7 +77,7 @@ bool IsFileExist(string &path) {
 
 int main() {
 	char szFilePath[MAX_PATH + 1];
-	GetModuleFileName(NULL, szFilePath, MAX_PATH);
+	GetModuleFileName(nullptr, szFilePath, MAX_PATH);
 	injectDllPath = szFilePath;
 	injectDllPath = injectDllPath.substr(0, injectDllPath.find_last_of('\\') + 1) + "WindInject.dll";
 	if (!IsFileExist(injectDllPath)) {
@@ -84,14 +87,14 @@ int main() {
 
 	char commandLine[MAX_PATH + 1];
 	cin >> commandLine;
-	if (!CreateProcess(commandLine) && hProcess != NULL) {
+	if (!CreateProcess(commandLine) && hProcess != nullptr) {
 		TerminateProcess(hProcess, -1);
 		return -1;
 	}
 	if (!CreateWLink(hProcess)) {
 		return -1;
 	}
-	if (!InjectDll() && hProcess != NULL) {
+	if (!InjectDll() && hProcess != nullptr) {
 		TerminateProcess(hProcess, -1);
 		return -1;
 	}

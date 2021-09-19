@@ -5,7 +5,7 @@ WThread wThreads[MAX_THREAD_NUM];
 HookInfo createRemoteThreadExHookInfo, getThreadIdHookInfo, closeHandleHookInfo, terminateThreadHookInfo;
 
 BOOL WThread::isAlive() {
-	if (this->internalHandle == NULL) {
+	if (this->internalHandle == nullptr) {
 		return false;
 	}
 	DWORD exitCode;
@@ -13,7 +13,7 @@ BOOL WThread::isAlive() {
 		if (exitCode == STILL_ACTIVE) {
 			return true;
 		}
-		this->internalHandle = NULL;
+		this->internalHandle = nullptr;
 		return false;
 	}
 	return false;
@@ -23,7 +23,7 @@ WThread *GetWThread(HANDLE hThread) {
 	const auto index = reinterpret_cast<DWORD>(hThread);
 	if (index >= MAGIC_NUMBER && index < MAGIC_NUMBER + MAX_THREAD_NUM) {
 		auto &wThread = wThreads[index - MAGIC_NUMBER];
-		if (wThread.originHandle != NULL && wThread.isAlive()) {
+		if (wThread.originHandle != nullptr && wThread.isAlive()) {
 			return &wThread;
 		}
 	}
@@ -43,8 +43,8 @@ _Ret_maybenull_ HANDLE WINAPI WCreateRemoteThreadEx(HANDLE hProcess, LPSECURITY_
 
 	DP3("[Wind] call CreateThread, hProcess: %p, lpStartAddress: %p, lpThreadId: %p", hProcess, lpStartAddress, lpThreadId);
 
-	if (hThread == NULL) {
-		return NULL;
+	if (hThread == nullptr) {
+		return nullptr;
 	}
 
 	if (hProcess != reinterpret_cast<HANDLE>(0xFFFFFFFF) && hProcess != wHProcess) {
@@ -89,18 +89,18 @@ DWORD WINAPI WGetThreadId(HANDLE Thread) {
 
 BOOL WINAPI WCloseHandle(HANDLE hObject) {
 	DP1("[Wind] call CloseHandle, hObject: %p", hObject);
-	if (hObject == NULL) {
+	if (hObject == nullptr) {
 		return false;
 	}
 	BOOL result;
 	const auto index = reinterpret_cast<DWORD>(hObject);
 	if (index >= MAGIC_NUMBER && index < MAGIC_NUMBER + MAX_THREAD_NUM) {
 		auto &wThread = wThreads[index - MAGIC_NUMBER];
-		if (wThread.originHandle != NULL && wThread.isAlive()) {
+		if (wThread.originHandle != nullptr && wThread.isAlive()) {
 			HookOff(closeHandleHookInfo);
 			result = CloseHandle(wThread.originHandle);
 			HookOn(closeHandleHookInfo);
-			wThread.originHandle = NULL;
+			wThread.originHandle = nullptr;
 			DP1("[Wind] Close Mapped thread, alive thread count: %d", GetAliveThreadCount());
 		} else {
 			result = false;
@@ -122,8 +122,8 @@ BOOL WINAPI WTerminateThread(HANDLE hThread, DWORD dwExitCode) {
 	HookOff(terminateThreadHookInfo);
 	const BOOL result = TerminateThread(wThread->originHandle, dwExitCode);
 	HookOn(terminateThreadHookInfo);
-	wThread->originHandle = NULL;
-	wThread->internalHandle = NULL;
+	wThread->originHandle = nullptr;
+	wThread->internalHandle = nullptr;
 	return result;
 }
 EXTERN_C_END
